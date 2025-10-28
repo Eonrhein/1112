@@ -4398,6 +4398,145 @@ def hardware_replace(service_name):
             "error": error_msg
         }), 500
 
+@app.route('/api/server-control/<service_name>/network-interfaces', methods=['OPTIONS', 'GET'])
+def get_network_interfaces(service_name):
+    """获取物理网卡列表（NetworkInterfaceController）"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
+    client = get_ovh_client()
+    if not client:
+        return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
+    
+    try:
+        add_log("INFO", f"[网卡] 获取物理网卡列表: {service_name}", "server_control")
+        
+        # 获取物理网卡MAC地址列表
+        mac_addresses = client.get(f'/dedicated/server/{service_name}/networkInterfaceController')
+        
+        interfaces = []
+        for mac in mac_addresses:
+            try:
+                # 获取每个网卡的详细信息
+                interface_detail = client.get(f'/dedicated/server/{service_name}/networkInterfaceController/{mac}')
+                interfaces.append({
+                    'mac': mac,
+                    'linkType': interface_detail.get('linkType'),  # public, private, public_lag等
+                    'virtualNetworkInterface': interface_detail.get('virtualNetworkInterface'),  # 关联的虚拟接口UUID（如果有）
+                })
+            except Exception as e:
+                add_log("WARN", f"[网卡] 获取网卡详情失败 {mac}: {str(e)}", "server_control")
+                # 即使单个网卡获取失败，也继续处理其他网卡
+                interfaces.append({
+                    'mac': mac,
+                    'linkType': 'unknown',
+                    'error': str(e)
+                })
+        
+        add_log("INFO", f"[网卡] 找到 {len(interfaces)} 个物理网卡", "server_control")
+        
+        return jsonify({
+            "success": True,
+            "interfaces": interfaces,
+            "count": len(interfaces)
+        })
+        
+    except Exception as e:
+        error_msg = str(e)
+        add_log("ERROR", f"[网卡] 获取物理网卡列表失败: {service_name} - {error_msg}", "server_control")
+        
+        # 如果API调用失败，返回空列表
+        if "does not exist" in error_msg.lower() or "not found" in error_msg.lower():
+            return jsonify({
+                "success": True,
+                "interfaces": [],
+                "count": 0,
+                "message": "该服务器暂无网卡信息"
+            })
+        
+        return jsonify({"success": False, "error": error_msg}), 500
+
+@app.route('/api/server-control/<service_name>/ola/aggregation', methods=['OPTIONS', 'POST'])
+def configure_ola_aggregation(service_name):
+    """OLA网络聚合: 将多个网络接口聚合以提升带宽（链路聚合/Link Aggregation）"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
+    client = get_ovh_client()
+    if not client:
+        return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
+    
+    try:
+        data = request.get_json()
+        name = data.get('name')
+        virtual_network_interfaces = data.get('virtualNetworkInterfaces', [])
+        
+        if not name:
+            return jsonify({"success": False, "error": "缺少聚合名称(name)参数"}), 400
+        
+        if not virtual_network_interfaces or len(virtual_network_interfaces) < 2:
+            return jsonify({"success": False, "error": "至少需要2个网络接口进行聚合"}), 400
+        
+        add_log("INFO", f"[OLA] 配置网络聚合: {service_name} - {name} - {len(virtual_network_interfaces)}个接口", "server_control")
+        
+        # 调用OVH API配置网络聚合
+        result = client.post(
+            f'/dedicated/server/{service_name}/ola/aggregation',
+            name=name,
+            virtualNetworkInterfaces=virtual_network_interfaces
+        )
+        
+        add_log("INFO", f"[OLA] 网络聚合配置任务已创建: Task#{result.get('taskId')}", "server_control")
+        
+        return jsonify({
+            "success": True,
+            "message": "网络聚合配置任务已创建",
+            "task": result
+        })
+        
+    except Exception as e:
+        error_msg = str(e)
+        add_log("ERROR", f"[OLA] 配置网络聚合失败: {service_name} - {error_msg}", "server_control")
+        return jsonify({"success": False, "error": error_msg}), 500
+
+@app.route('/api/server-control/<service_name>/ola/reset', methods=['OPTIONS', 'POST'])
+def reset_ola_configuration(service_name):
+    """OLA网络聚合: 重置网络接口到默认配置"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
+    client = get_ovh_client()
+    if not client:
+        return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
+    
+    try:
+        data = request.get_json()
+        virtual_network_interface = data.get('virtualNetworkInterface')
+        
+        if not virtual_network_interface:
+            return jsonify({"success": False, "error": "缺少虚拟网络接口UUID(virtualNetworkInterface)参数"}), 400
+        
+        add_log("INFO", f"[OLA] 重置网络接口: {service_name} - {virtual_network_interface}", "server_control")
+        
+        # 调用OVH API重置网络配置
+        result = client.post(
+            f'/dedicated/server/{service_name}/ola/reset',
+            virtualNetworkInterface=virtual_network_interface
+        )
+        
+        add_log("INFO", f"[OLA] 网络接口重置任务已创建: Task#{result.get('taskId')}", "server_control")
+        
+        return jsonify({
+            "success": True,
+            "message": "网络接口重置任务已创建",
+            "task": result
+        })
+        
+    except Exception as e:
+        error_msg = str(e)
+        add_log("ERROR", f"[OLA] 重置网络接口失败: {service_name} - {error_msg}", "server_control")
+        return jsonify({"success": False, "error": error_msg}), 500
+
 @app.route('/api/server-control/<service_name>/partition-schemes', methods=['GET', 'OPTIONS'])
 def get_partition_schemes(service_name):
     """获取可用的分区方案"""

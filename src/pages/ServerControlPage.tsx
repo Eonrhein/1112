@@ -148,6 +148,10 @@ const ServerControlPage: React.FC = () => {
   const [plannedInterventions, setPlannedInterventions] = useState<any[]>([]);
   const [loadingPlannedInterventions, setLoadingPlannedInterventions] = useState(false);
 
+  // 网络接口功能（物理网卡）
+  const [networkInterfaces, setNetworkInterfaces] = useState<any[]>([]);
+  const [loadingNetworkInterfaces, setLoadingNetworkInterfaces] = useState(false);
+
   // Task 1: 获取服务器列表（只显示活跃服务器）
   const fetchServers = async () => {
     setIsLoading(true);
@@ -821,6 +825,22 @@ const ServerControlPage: React.FC = () => {
     }
   };
 
+  // 网络接口：获取物理网卡列表
+  const fetchNetworkInterfaces = async (serviceName: string) => {
+    setLoadingNetworkInterfaces(true);
+    try {
+      const response = await api.get(`/server-control/${serviceName}/network-interfaces`);
+      if (response.data.success) {
+        setNetworkInterfaces(response.data.interfaces || []);
+      }
+    } catch (error: any) {
+      console.error('获取物理网卡失败:', error);
+      setNetworkInterfaces([]);
+    } finally {
+      setLoadingNetworkInterfaces(false);
+    }
+  };
+
   // 硬件更换：提交请求
   const handleHardwareReplace = async () => {
     if (!selectedServer || !hardwareReplaceType) return;
@@ -898,6 +918,7 @@ const ServerControlPage: React.FC = () => {
       fetchServiceInfo(selectedServer.serviceName);
       fetchInterventions(selectedServer.serviceName);
       fetchPlannedInterventions(selectedServer.serviceName);
+      fetchNetworkInterfaces(selectedServer.serviceName);
     }
   }, [selectedServer]);
 
@@ -1316,6 +1337,66 @@ const ServerControlPage: React.FC = () => {
                   <div className="text-center py-6">
                     <Calendar className="w-12 h-12 text-cyber-muted/30 mx-auto mb-2" />
                     <p className="text-cyber-muted text-sm">暂无计划维护</p>
+                  </div>
+                )}
+              </div>
+
+              {/* 网络接口（物理网卡） */}
+              <div className="cyber-card">
+                <h3 className="text-lg font-semibold text-cyber-text mb-2 flex items-center gap-2">
+                  <Wifi className="w-5 h-5 text-blue-400" />
+                  网络接口
+                </h3>
+                <p className="text-xs text-cyber-muted mb-4">
+                  服务器物理网卡信息
+                </p>
+                {loadingNetworkInterfaces ? (
+                  <div className="flex items-center gap-2 text-cyber-muted">
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    加载中...
+                  </div>
+                ) : networkInterfaces.length > 0 ? (
+                  <div className="space-y-2">
+                    {networkInterfaces.map((iface, idx) => (
+                      <div key={iface.mac || idx} className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-blue-400 font-semibold font-mono text-sm">{iface.mac}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded ${
+                              iface.linkType === 'public' ? 'bg-green-500/20 text-green-400' :
+                              iface.linkType === 'private' ? 'bg-orange-500/20 text-orange-400' :
+                              iface.linkType?.includes('lag') ? 'bg-purple-500/20 text-purple-400' :
+                              'bg-gray-500/20 text-gray-400'
+                            }`}>
+                              {iface.linkType === 'public' ? '公网' :
+                               iface.linkType === 'private' ? '私网' :
+                               iface.linkType === 'public_lag' ? '公网聚合' :
+                               iface.linkType === 'private_lag' ? '私网聚合' :
+                               iface.linkType === 'isolated' ? '隔离' :
+                               iface.linkType || '未知'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="space-y-1 text-sm">
+                          {iface.virtualNetworkInterface && (
+                            <div className="text-cyber-muted/80 text-xs p-2 bg-purple-500/10 rounded flex items-center gap-2">
+                              <span className="text-purple-400">🔗</span>
+                              <span>已关联OLA虚拟接口</span>
+                            </div>
+                          )}
+                          {iface.error && (
+                            <div className="text-red-400/80 text-xs p-2 bg-red-500/10 rounded">
+                              错误: {iface.error}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <Wifi className="w-12 h-12 text-cyber-muted/30 mx-auto mb-2" />
+                    <p className="text-cyber-muted text-sm">该服务器暂无网卡信息</p>
                   </div>
                 )}
               </div>
