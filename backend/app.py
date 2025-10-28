@@ -3444,9 +3444,12 @@ def check_config_sniper_task(task_id):
 
 # ==================== 服务器管理（已购服务器控制）====================
 
-@app.route('/api/server-control/list', methods=['GET'])
+@app.route('/api/server-control/list', methods=['OPTIONS', 'GET'])
 def get_my_servers():
     """获取当前账户的服务器列表"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -3498,9 +3501,12 @@ def get_my_servers():
         add_log("ERROR", f"获取服务器列表失败: {str(e)}", "server_control")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/server-control/<service_name>/reboot', methods=['POST'])
+@app.route('/api/server-control/<service_name>/reboot', methods=['OPTIONS', 'POST'])
 def reboot_server(service_name):
     """重启服务器"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -3520,9 +3526,12 @@ def reboot_server(service_name):
         add_log("ERROR", f"重启服务器 {service_name} 失败: {str(e)}", "server_control")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/server-control/<service_name>/templates', methods=['GET'])
+@app.route('/api/server-control/<service_name>/templates', methods=['OPTIONS', 'GET'])
 def get_os_templates(service_name):
     """获取服务器可用的操作系统模板"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -3561,9 +3570,12 @@ def get_os_templates(service_name):
         add_log("ERROR", f"获取服务器 {service_name} 系统模板失败: {str(e)}", "server_control")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/server-control/<service_name>/install', methods=['POST'])
+@app.route('/api/server-control/<service_name>/install', methods=['OPTIONS', 'POST'])
 def install_os(service_name):
     """重装服务器操作系统"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -3875,9 +3887,12 @@ def get_install_status(service_name):
         add_log("ERROR", f"获取服务器 {service_name} 安装进度失败: [{error_type}] {error_message}", "server_control")
         return jsonify({"success": False, "error": error_message, "type": error_type}), 500
 
-@app.route('/api/server-control/<service_name>/tasks', methods=['GET'])
+@app.route('/api/server-control/<service_name>/tasks', methods=['OPTIONS', 'GET'])
 def get_server_tasks(service_name):
     """获取服务器任务列表"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -3914,9 +3929,12 @@ def get_server_tasks(service_name):
 
 # ==================== 服务器高级管理功能 ====================
 
-@app.route('/api/server-control/<service_name>/boot', methods=['GET'])
+@app.route('/api/server-control/<service_name>/boot', methods=['OPTIONS', 'GET'])
 def get_boot_config(service_name):
     """获取服务器启动配置"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -3945,9 +3963,12 @@ def get_boot_config(service_name):
         add_log("ERROR", f"获取服务器 {service_name} 启动配置失败: {str(e)}", "server_control")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/server-control/<service_name>/boot/<int:boot_id>', methods=['PUT'])
+@app.route('/api/server-control/<service_name>/boot/<int:boot_id>', methods=['OPTIONS', 'PUT'])
 def set_boot_config(service_name, boot_id):
     """设置服务器启动模式"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -3960,9 +3981,12 @@ def set_boot_config(service_name, boot_id):
         add_log("ERROR", f"设置服务器 {service_name} 启动模式失败: {str(e)}", "server_control")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/server-control/<service_name>/monitoring', methods=['GET'])
+@app.route('/api/server-control/<service_name>/monitoring', methods=['OPTIONS', 'GET'])
 def get_monitoring_status(service_name):
     """获取监控状态"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -3974,9 +3998,12 @@ def get_monitoring_status(service_name):
         add_log("ERROR", f"获取服务器 {service_name} 监控状态失败: {str(e)}", "server_control")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/server-control/<service_name>/monitoring', methods=['PUT'])
+@app.route('/api/server-control/<service_name>/monitoring', methods=['OPTIONS', 'PUT'])
 def set_monitoring_status(service_name):
     """设置监控状态"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -3992,9 +4019,12 @@ def set_monitoring_status(service_name):
         add_log("ERROR", f"设置服务器 {service_name} 监控状态失败: {str(e)}", "server_control")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/server-control/<service_name>/hardware', methods=['GET'])
+@app.route('/api/server-control/<service_name>/hardware', methods=['OPTIONS', 'GET'])
 def get_hardware_info(service_name):
     """获取硬件详细信息"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -4025,9 +4055,12 @@ def get_hardware_info(service_name):
         add_log("ERROR", f"获取服务器 {service_name} 硬件信息失败: {str(e)}", "server_control")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/server-control/<service_name>/network-specs', methods=['GET'])
+@app.route('/api/server-control/<service_name>/network-specs', methods=['OPTIONS', 'GET'])
 def get_network_specs(service_name):
     """获取网络规格详细信息"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -4051,9 +4084,12 @@ def get_network_specs(service_name):
         add_log("ERROR", f"获取服务器 {service_name} 网络规格失败: {str(e)}", "server_control")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/server-control/<service_name>/ips', methods=['GET'])
+@app.route('/api/server-control/<service_name>/ips', methods=['OPTIONS', 'GET'])
 def get_server_ips(service_name):
     """获取服务器IP列表"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -4078,9 +4114,12 @@ def get_server_ips(service_name):
         add_log("ERROR", f"获取服务器 {service_name} IP列表失败: {str(e)}", "server_control")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/server-control/<service_name>/reverse', methods=['GET'])
+@app.route('/api/server-control/<service_name>/reverse', methods=['OPTIONS', 'GET'])
 def get_reverse_dns(service_name):
     """获取反向DNS"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -4103,9 +4142,12 @@ def get_reverse_dns(service_name):
         add_log("ERROR", f"获取服务器 {service_name} 反向DNS失败: {str(e)}", "server_control")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/server-control/<service_name>/reverse', methods=['POST'])
+@app.route('/api/server-control/<service_name>/reverse', methods=['OPTIONS', 'POST'])
 def set_reverse_dns(service_name):
     """设置反向DNS"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
@@ -4125,9 +4167,12 @@ def set_reverse_dns(service_name):
         add_log("ERROR", f"设置服务器 {service_name} 反向DNS失败: {str(e)}", "server_control")
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/server-control/<service_name>/serviceinfo', methods=['GET'])
+@app.route('/api/server-control/<service_name>/serviceinfo', methods=['OPTIONS', 'GET'])
 def get_service_info(service_name):
     """获取服务信息（到期时间等）"""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     client = get_ovh_client()
     if not client:
         return jsonify({"success": False, "error": "未配置OVH API密钥"}), 401
