@@ -1879,7 +1879,7 @@ const ServersPage = () => {
                 key={server.planCode}
                 className="bg-cyber-grid/10 border border-cyber-accent/30 rounded-md overflow-hidden w-full"
               >
-                <div className={`flex items-center gap-4 ${displayMode === 'compact' ? 'p-3' : 'p-4'}`}>
+                <div className="flex items-center gap-4 p-4">
                   {/* 服务器型号 */}
                   <div className="flex-shrink-0 w-32">
                     <div className="flex items-center gap-2">
@@ -1894,7 +1894,7 @@ const ServersPage = () => {
                   </div>
 
                   {/* 服务器规格 */}
-                  <div className={`flex-1 grid gap-3 ${displayMode === 'compact' ? 'grid-cols-4' : 'grid-cols-4 lg:grid-cols-5'}`}>
+                  <div className="flex-1 grid gap-3 grid-cols-4 lg:grid-cols-5">
                     <div className="flex items-center gap-2">
                       <Cpu size={14} className="text-cyber-accent flex-shrink-0" />
                       <div className="min-w-0">
@@ -1923,7 +1923,7 @@ const ServersPage = () => {
                         <div className="text-xs font-medium truncate">{formatServerSpec(server.bandwidth, "带宽")}</div>
                       </div>
                     </div>
-                    {displayMode === 'detailed' && server.vrackBandwidth && server.vrackBandwidth !== "N/A" && (
+                    {server.vrackBandwidth && server.vrackBandwidth !== "N/A" && (
                       <div className="flex items-center gap-2">
                         <ArrowRightLeft size={14} className="text-cyber-accent flex-shrink-0" />
                         <div className="min-w-0">
@@ -1984,9 +1984,8 @@ const ServersPage = () => {
                   </div>
                 </div>
 
-                {/* 数据中心选择（紧凑模式下隐藏） */}
-                {displayMode === 'detailed' && (
-                  <div className="border-t border-cyber-accent/20 p-3 bg-cyber-grid/5">
+                {/* 数据中心选择（固定显示） */}
+                <div className="border-t border-cyber-accent/20 p-3 bg-cyber-grid/5">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs text-cyber-muted">数据中心选择：</span>
                       <div className="flex gap-1.5">
@@ -2041,7 +2040,6 @@ const ServersPage = () => {
                         })}
                     </div>
                   </div>
-                )}
               </div>
             ))}
           </div>
