@@ -36,3 +36,12 @@ docker-compose up -d --build
 ---
 
 **就这么简单！** ✨
+
+---
+
+## 致谢
+
+感谢以下人员和组织的协助与支持：
+
+- [@szzc1227](https://t.me/szzc1227) - 协助测试
+- [@mtrucc](https://github.com/mtrucc) - 技术支持
